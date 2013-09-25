@@ -10,16 +10,14 @@ the al will reply:
 
     <logbot> sam: I am AL
 
-Run this script with two arguments, the channel name the bot should
-connect to, and file to log to, e.g.:
+Run this script with four arguments:
+e.g.
+    <server/ip>:    'irc.freenode.net'
+    <port>:         6667
+    <channel>:      main
+    <logfile>:      log/channel.log
 
-    $ python AL.py test test.log
-
-will log channel #test to the file 'test.log'.
-
-To run the script:
-
-    $ python ircLogBot.py <channel> <file>
+    $ python AL.py irc.freenode.net 6667 main log/channel.log
 """
 
 
@@ -159,10 +157,10 @@ if __name__ == '__main__':
     log.startLogging(sys.stdout)
     
     # create factory protocol and application
-    f = LogBotFactory(sys.argv[1], sys.argv[2])
+    f = LogBotFactory(sys.argv[3], sys.argv[4])
 
     # connect factory to this host and port
-    reactor.connectTCP("199.192.96.79", 6667, f)
+    reactor.connectTCP(sys.argv[1], sys.argv[2], f)
 
     # run bot
     reactor.run()

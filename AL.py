@@ -1,19 +1,19 @@
 """
-skynet
+Al - for Alan Turing
 
 If someone says the bot's name in the channel followed by a ':',
 e.g.
 
-    <sam> skynet: hello!
+    <sam> al: hello!
 
-the skynet will reply:
+the al will reply:
 
-    <logbot> sam: I am skynet
+    <logbot> sam: I am AL
 
 Run this script with two arguments, the channel name the bot should
 connect to, and file to log to, e.g.:
 
-    $ python skynet.py test test.log
+    $ python AL.py test test.log
 
 will log channel #test to the file 'test.log'.
 
@@ -53,14 +53,16 @@ class MessageLogger:
 
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
-    
-    nickname = "skynet"
+   
+    # the nickname might have problems with uniquness when connecting to freenode.net 
+    nickname = "AL"
     
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
         self.logger = MessageLogger(open(self.factory.filename, "a"))
         self.logger.log("[connected at %s]" % 
                         time.asctime(time.localtime(time.time())))
+        self.join(self.factory.channel)
 
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
@@ -90,16 +92,17 @@ class LogBot(irc.IRCClient):
             self.msg(user, msg)
             return
 
-        ##if msg.startswith(self.nickname + ': cafe'):
-        #    menu = scrapeCafe()
-        #    self.msg(channel, msg)
-        #    self.logger.log('<%s> %s' % (self.nickname, msg))
-
-        # Otherwise check to see if it is a message directed at me
-        if msg.startswith(self.nickname + ":"):
-            msg = "%s: I am a log bot" % user
-            self.msg(channel, msg)
-            self.logger.log("<%s> %s" % (self.nickname, msg))
+        if msg.startswith(self.nickname + ': cafe'):
+            try:
+                menu = scrapeCafe()
+                # make the menu all nice for chat purposes
+                menu_msg = 'Steam \'n Turren: {0}.   Field of Greens: {1}.   Flavor & Fire: {2}.   The Grillery: {3}.   Main Event: {4}'.format(
+                    menu['soup'], menu['greens'], menu['flavor'], menu['grill'], menu['main'])
+                self.msg(channel, menu_msg)
+            except Exception as e:
+                print e.message
+                self.msg(channel, 'Sorry, I do not understand')
+                pass
 
 
     def action(self, user, channel, msg):
@@ -159,7 +162,7 @@ if __name__ == '__main__':
     f = LogBotFactory(sys.argv[1], sys.argv[2])
 
     # connect factory to this host and port
-    reactor.connectTCP("irc.freenode.net", 6667, f)
+    reactor.connectTCP("199.192.96.79", 6667, f)
 
     # run bot
     reactor.run()

@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 sftp-config.json
+log/*

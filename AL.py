@@ -55,7 +55,7 @@ class LogBot(irc.IRCClient):
     """A logging IRC bot."""
    
     # the nickname might have problems with uniquness when connecting to freenode.net 
-    nickname = "sambotbev"
+    nickname = "AL"
     
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     f = LogBotFactory(sys.argv[1], sys.argv[2])
 
     # connect factory to this host and port
-    reactor.connectTCP("irc.freenode.net", 6666, f)
+    reactor.connectTCP("199.192.96.79", 6667, f)
 
     # run bot
     reactor.run()

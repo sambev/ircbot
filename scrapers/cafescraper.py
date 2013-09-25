@@ -24,8 +24,9 @@ def scrapeCafe():
 	# thanks to iffycan for the more elegant approach
 	for k,v in mapping.items():
 	    try:
-	        stations[k] = main_div.find_all('li', v)[0].contents[2]
+	        stations[k] = main_div.find_all('li', v)[0].contents[2].get_text()
 	    except:
+	    	stations[k] = 'Not listed'
 	        pass
 
 	return stations

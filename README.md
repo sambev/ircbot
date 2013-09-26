@@ -13,4 +13,4 @@ How to install them on Ubuntu:
 `apt-get install libxml2-dev libxslt-dev`
 
 Basic usage:
-`python AL.py <channel> <logfile>`
+`python AL.py <server> <port> <channel> <logfile>`

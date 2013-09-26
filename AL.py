@@ -29,6 +29,7 @@ from twisted.python import log
 # system imports
 import time, sys
 from scrapers.cafescraper import scrapeCafe
+from apis.weatherman import currentWeather
 
 
 class MessageLogger:
@@ -102,6 +103,17 @@ class LogBot(irc.IRCClient):
                 self.msg(channel, 'Sorry, I do not understand')
                 pass
 
+        if msg.startswith(self.nickname + ': weather'):
+            try:
+                # get the weather and tell the channel
+                weather = currentWeather()
+                w_msg = '{0},  {1} degrees'.format(weather['status'], weather['temp'])
+                self.msg(channel, w_msg)
+            except Exception as e:
+                print e.message;
+                self.msg(channel, 'Sorry I do not understand')
+                pass
+
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
@@ -160,7 +172,7 @@ if __name__ == '__main__':
     f = LogBotFactory(sys.argv[3], sys.argv[4])
 
     # connect factory to this host and port
-    reactor.connectTCP(sys.argv[1], sys.argv[2], f)
+    reactor.connectTCP(sys.argv[1], int(sys.argv[2]), f)
 
     # run bot
     reactor.run()

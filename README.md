@@ -19,5 +19,11 @@ Then you can run this:
 This should be all you need.
 
 
+### Mac Installation:
+
+You will need Xcode with commandline tools intalled
+
 ### Basic usage:
 `python AL.py <server> <port> <channel> <logfile>`
+
+

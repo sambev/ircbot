@@ -6,12 +6,7 @@ get a random item from wikipedia's common misconception page
 import requests
 import json
 import random
-from bs4 import BeautifulSoup
 
 # Get the page contents and make a soup object from it
-page = requests.get('http://en.wikipedia.org/wiki/Monty_Python')
-the_html = BeautifulSoup(page.text)
-
-main_div = the_html.find_all('h3', 'mw-content-text')[0]
-
-print main_div
+r = requests.get('http://en.wikipedia.org/w/api.php?action=query&pageids=321956&redirects&format=json&export')
+print r.json()

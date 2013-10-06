@@ -40,14 +40,17 @@ class MessageLogger:
     def __init__(self, file):
         self.file = file
 
+
     def log(self, message):
         """Write a message to the file."""
         timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
         self.file.write('%s %s\n' % (timestamp, message))
         self.file.flush()
 
+
     def close(self):
         self.file.close()
+
 
 
 class LogBot(irc.IRCClient):
@@ -55,13 +58,16 @@ class LogBot(irc.IRCClient):
    
     # the nickname might have problems with uniquness when connecting to freenode.net 
     nickname = "AL"
+    __stored_messages = {} # used for user messages with the tell command
     
+
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
         self.logger = MessageLogger(open(self.factory.filename, "a"))
         self.logger.log("[connected at %s]" % 
                         time.asctime(time.localtime(time.time())))
         self.join(self.factory.channel)
+
 
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
@@ -76,14 +82,17 @@ class LogBot(irc.IRCClient):
         """Called when bot has succesfully signed on to server."""
         self.join(self.factory.channel)
 
+
     def joined(self, channel):
         """This will get called when the bot joins the channel."""
         self.logger.log("[I have joined %s]" % channel)
+
 
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split('!', 1)[0]
         self.logger.log("<%s> %s" % (user, msg))
+        parts = msg.split()
         
         # Check to see if they're sending me a private message
         if channel == self.nickname:
@@ -91,28 +100,49 @@ class LogBot(irc.IRCClient):
             self.msg(user, msg)
             return
 
-        if msg.startswith(self.nickname + ': cafe'):
-            try:
-                menu = scrapeCafe()
-                # make the menu all nice for chat purposes
-                menu_msg = 'Steam \'n Turren: {0}.   Field of Greens: {1}.   Flavor & Fire: {2}.   The Grillery: {3}.   Main Event: {4}'.format(
-                    menu['soup'], menu['greens'], menu['flavor'], menu['grill'], menu['main'])
-                self.msg(channel, menu_msg)
-            except Exception as e:
-                print e.message
-                self.msg(channel, 'Sorry, I do not understand')
-                pass
+        if parts[0] == self.nickname + ':':
+            if parts[1] == 'cafe':
+                try:
+                    menu = scrapeCafe()
+                    # make the menu all nice for chat purposes
+                    menu_msg = 'Steam \'n Turren: {0}.\nField of Greens: {1}.\nFlavor & Fire: {2}.\nThe Grillery: {3}.\nMain Event: {4}'.format(
+                        menu['soup'], menu['greens'], menu['flavor'], menu['grill'], menu['main'])
+                    self.msg(channel, menu_msg)
+                except Exception as e:
+                    print e.message
+                    self.msg(channel, 'Sorry, I do not understand')
+                    pass
 
-        if msg.startswith(self.nickname + ': weather'):
-            try:
-                # get the weather and tell the channel
-                weather = currentWeather()
-                w_msg = '{0},  {1} degrees'.format(weather['status'], weather['temp'])
-                self.msg(channel, w_msg)
-            except Exception as e:
-                print e.message;
-                self.msg(channel, 'Sorry I do not understand')
-                pass
+            if parts[1] == 'weather':
+                try:
+                    # get the weather and tell the channel
+                    weather = currentWeather()
+                    w_msg = '{0},  {1} degrees'.format(weather['status'], weather['temp'])
+                    self.msg(channel, w_msg)
+                except Exception as e:
+                    print e.message
+                    self.msg(channel, 'Sorry I do not understand')
+                    pass
+
+            if parts[1] == 'tell':
+                try:
+                    # form the message
+                    target_user = parts[2]
+                    tell_msg = '{0}, {1} said: {2}'.format(target_user, user, ' '.join(parts[3:]))
+                    if target_user not in self.__stored_messages:
+                        self.__stored_messages[target_user] = []
+                    self.__stored_messages[target_user].append(tell_msg)
+                except Exception as e:
+                    print e.message
+                    self.msg(channel, 'Give me a message to tell someone!: `AL: tell <user> <message>`')
+
+
+    def userJoined(self, user, channel):
+        """This will get called when I see a user join a channel"""
+        if user in self.__stored_messages:
+            for k, v in self.__stored_messages.items():
+                for message in v:
+                    self.msg(channel, message)
 
 
     def action(self, user, channel, msg):
@@ -120,8 +150,8 @@ class LogBot(irc.IRCClient):
         user = user.split('!', 1)[0]
         self.logger.log("* %s %s" % (user, msg))
 
-    # irc callbacks
 
+    # irc callbacks
     def irc_NICK(self, prefix, params):
         """Called when an IRC user changes their nickname."""
         old_nick = prefix.split('!')[0]

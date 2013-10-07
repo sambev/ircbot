@@ -132,6 +132,7 @@ class LogBot(irc.IRCClient):
                     if target_user not in self.__stored_messages:
                         self.__stored_messages[target_user] = []
                     self.__stored_messages[target_user].append(tell_msg)
+                    self.msg(channel, 'I will pass that along when {0} joins'.format(target_user))
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'Give me a message to tell someone!: `AL: tell <user> <message>`')

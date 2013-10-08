@@ -59,6 +59,7 @@ class LogBot(irc.IRCClient):
     # the nickname might have problems with uniquness when connecting to freenode.net 
     nickname = "AL"
     __stored_messages = {} # used for user messages with the tell command
+    __points = {}
     
 
     def connectionMade(self):
@@ -100,14 +101,42 @@ class LogBot(irc.IRCClient):
             self.msg(user, msg)
             return
 
+        # if someone is trying to give points
+        if parts[0][-2:] == '++':
+            user = parts[0][:-2]
+            if user[-1] == ':':  # if the user has ':' with their name from autocomplete
+                user = user[:-1]
+            # if the user is already in the dictionary
+            if user in self.__points:
+                    self.__points[user] += 1
+            # if they aren't being recorded yet, start them at 1 or -1
+            else:
+                    self.__points[user] = 1
+
+            if self.__points[user] == 1:
+                self.msg(channel, '{0} has {1} point'. format(user, self.__points[user]))
+            else:
+                self.msg(channel, '{0} has {1} points'. format(user, self.__points[user]))
+
+
+        #==========================================================================================
+        # ---------- MESSAGES DIRECTED AT ME
+        #==========================================================================================
         if parts[0] == self.nickname + ':':
             if parts[1] == 'cafe':
                 try:
                     menu = scrapeCafe()
                     # make the menu all nice for chat purposes
-                    menu_msg = 'Steam \'n Turren: {0}.\nField of Greens: {1}.\nFlavor & Fire: {2}.\nThe Grillery: {3}.\nMain Event: {4}'.format(
-                        menu['soup'], menu['greens'], menu['flavor'], menu['grill'], menu['main'])
+                    menu_msg = 'Steam \'n Turren: {0}.\nField of Greens:{1}.\
+                        \nFlavor & Fire: {2}.\nThe Grillery: {3}.\
+                        \nMain Event: {4}'.format(
+                                            menu['soup'], 
+                                            menu['greens'], 
+                                            menu['flavor'], 
+                                            menu['grill'], 
+                                            menu['main'])
                     self.msg(channel, menu_msg)
+                    self.logger.log(menu_msg)
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'Sorry, I do not understand')
@@ -119,6 +148,7 @@ class LogBot(irc.IRCClient):
                     weather = currentWeather()
                     w_msg = '{0},  {1} degrees'.format(weather['status'], weather['temp'])
                     self.msg(channel, w_msg)
+                    self.logger.log(w_msg)
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'Sorry I do not understand')
@@ -137,13 +167,29 @@ class LogBot(irc.IRCClient):
                     print e.message
                     self.msg(channel, 'Give me a message to tell someone!: `AL: tell <user> <message>`')
 
+            if parts[1] == 'help':
+                try:
+                    help_msg = 'I currently support the following commands:\
+                    \ncafe\nweather\n\
+                    \ntell <user> <message>'
+                    self.msg(channel, help_msg)
+                except Exception as e:
+                    print e.message
+                    self.msg(channel, 'The help command broke')
+
 
     def userJoined(self, user, channel):
         """This will get called when I see a user join a channel"""
-        if user in self.__stored_messages:
-            for k, v in self.__stored_messages.items():
-                for message in v:
+        #check to see if I need to tell anyone anything
+        try:
+            if user in self.__stored_messages:
+                for message in self.__stored_messages[user]:
                     self.msg(channel, message)
+                #remove the messages
+                del self.__stored_messages[user]           
+        except Exception as e:
+            print e
+            self.msg(channel, 'I was trying to tell someone something, but I broke. :(')
 
 
     def action(self, user, channel, msg):

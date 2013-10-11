@@ -2,3 +2,4 @@
 *.swp
 sftp-config.json
 log/*
+config.py

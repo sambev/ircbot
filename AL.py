@@ -144,7 +144,7 @@ class LogBot(irc.IRCClient):
                     self.msg(channel, 'Sorry, I do not understand')
                     pass
 
-            if parts[1] == 'weather':
+            elif parts[1] == 'weather':
                 try:
                     # get the weather and tell the channel
                     weather = currentWeather()
@@ -156,7 +156,7 @@ class LogBot(irc.IRCClient):
                     self.msg(channel, 'Sorry I do not understand')
                     pass
 
-            if parts[1] == 'tell':
+            elif parts[1] == 'tell':
                 try:
                     # form the message
                     target_user = parts[2]
@@ -169,7 +169,7 @@ class LogBot(irc.IRCClient):
                     print e.message
                     self.msg(channel, 'Give me a message to tell someone!: `AL: tell <user> <message>`')
 
-            if parts[1] == 'help':
+            elif parts[1] == 'help':
                 try:
                     help_msg = 'I currently support the following commands:\
                     \ncafe\nweather\n\
@@ -178,21 +178,22 @@ class LogBot(irc.IRCClient):
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'The help command broke')
-                    
+
         #==========================================================================================
         # ---------- IF NOT ONE OF THE SPECIAL COMMANDS ABOVE ASK WOLFRAM
         #==========================================================================================
-            try:
-                config = ConfigParser.RawConfigParser()
-                config.read('wfconfig.cfg')
-                key = config.get('wolfram', 'key')
-                question = ' '.join(parts[1:])
-                w = wolfram(key)
-                answer = w.search(question)
-                self.msg(channel, answer)
-            except Exception as e:
-                print e
-                print 'I died trying to ask wolfram a question'
+            else:
+                try:
+                    config = ConfigParser.RawConfigParser()
+                    config.read('wfconfig.cfg')
+                    key = config.get('wolfram', 'key')
+                    question = ' '.join(parts[1:])
+                    w = wolfram(key)
+                    answer = w.search(question)
+                    self.msg(channel, answer)
+                except Exception as e:
+                    print e
+                    print 'I died trying to ask wolfram a question'
 
 
     def userJoined(self, user, channel):

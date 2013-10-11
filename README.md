@@ -37,13 +37,7 @@ If you don't have pip, use easy_install to install it
 
 ### Windows Installation:
 
-The expensive route is to go to apple.com and pick out your favorite mac machine (preferably an iMac or MacbookPro)
-and follow the mac instructions when you receive your machine.
-
-The cheap route is to download Ubuntu or another Debian based OS for free and follow the Ubuntu\Debian installation.
-If you use another linux distro, you are likely smart enough to install pip on that particular distro.
-
-There are no other options.
+If you get it running on windows and have easy to follow steps, feel free to udpate this.
 
 ### Basic usage:
 `python AL.py <server> <port> <channel> <logfile>`

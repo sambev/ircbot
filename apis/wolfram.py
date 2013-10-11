@@ -35,7 +35,7 @@ class wolfram(object):
         result_dics = self._xmlparser(xml)
         #return result_dics
         #print result_dics
-        print result_dics.get('Result', result_dics.get('Value'))
+        return result_dics.get('Result', result_dics.get('Value', 'I don\'t know'))
  
 if __name__ == "__main__":
     appid = sys.argv[1]

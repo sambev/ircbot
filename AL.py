@@ -30,6 +30,8 @@ from twisted.python import log
 import time, sys
 from scrapers.cafescraper import scrapeCafe
 from apis.weatherman import currentWeather
+from apis.wolfram import wolfram
+import ConfigParser
 
 
 class MessageLogger:
@@ -176,6 +178,21 @@ class LogBot(irc.IRCClient):
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'The help command broke')
+                    
+        #==========================================================================================
+        # ---------- IF NOT ONE OF THE SPECIAL COMMANDS ABOVE ASK WOLFRAM
+        #==========================================================================================
+            try:
+                config = ConfigParser.RawConfigParser()
+                config.read('wfconfig.cfg')
+                key = config.get('wolfram', 'key')
+                question = ' '.join(parts[1:])
+                w = wolfram(key)
+                answer = w.search(question)
+                self.msg(channel, answer)
+            except Exception as e:
+                print e
+                print 'I died trying to ask wolfram a question'
 
 
     def userJoined(self, user, channel):

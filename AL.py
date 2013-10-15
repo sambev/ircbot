@@ -31,6 +31,7 @@ import time, sys
 from scrapers.cafescraper import scrapeCafe
 from apis.weatherman import currentWeather
 from apis.wolfram import wolfram
+from apis.urbandic import urbandic
 import ConfigParser
 
 
@@ -190,6 +191,15 @@ class LogBot(irc.IRCClient):
                     question = ' '.join(parts[1:])
                     w = wolfram(key)
                     answer = w.search(question)
+                    if not answer:                        
+                        urban_response = urbandic(question)
+                        if urban_response:
+                            answer = '{0} \nFor Example: {1}\n{2}'.format(
+                                                urban_response['definition'], 
+                                                urban_response['example'], 
+                                                urban_response['permalink']) 
+                        else:
+                            answer = 'i don\'t know'
                     self.msg(channel, answer)
                 except Exception as e:
                     print e

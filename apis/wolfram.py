@@ -10,8 +10,8 @@ class wolfram(object):
         self.base_url = 'http://api.wolframalpha.com/v2/query?'
         self.headers = {'User-Agent':None}
  
-    def _get_xml(self, ip):
-        url_params = {'input':ip, 'appid':self.appid}
+    def _get_xml(self, question):
+        url_params = {'input':question, 'appid':self.appid}
         data = urllib.urlencode(url_params)
         #print data
         req = urllib2.Request(self.base_url, data, self.headers)
@@ -30,12 +30,12 @@ class wolfram(object):
                         data_dics[e.get('title')] = it.text
         return data_dics
  
-    def search(self, ip):
-        xml = self._get_xml(ip)
+    def search(self, question):
+        xml = self._get_xml(question)
         result_dics = self._xmlparser(xml)
         #return result_dics
         #print result_dics
-        return result_dics.get('Result', result_dics.get('Value', 'I don\'t know'))
+        return result_dics.get('Result', result_dics.get('Value', None))
  
 if __name__ == "__main__":
     appid = sys.argv[1]

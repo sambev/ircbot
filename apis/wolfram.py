@@ -32,10 +32,8 @@ class wolfram(object):
  
     def search(self, question):
         xml = self._get_xml(question)
-        result_dics = self._xmlparser(xml)
-        #return result_dics
-        #print result_dics
-        return result_dics.get('Result', result_dics.get('Value', None))
+        response = self._xmlparser(xml)
+        return response
  
 if __name__ == "__main__":
     appid = sys.argv[1]

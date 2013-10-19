@@ -1,4 +1,4 @@
-def urbandic(query):
+def urbanDict(query):
     """
     Searches urbandictionary.com for a definition to the query given
     @return response dictionary 
@@ -16,7 +16,6 @@ def urbandic(query):
             'example':data['list'][0]['example'],
             'permalink':data['list'][0]['permalink']
         }
-
     else:
         response = None
 

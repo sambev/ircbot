@@ -31,8 +31,9 @@ import time, sys
 from scrapers.cafescraper import scrapeCafe
 from apis.weatherman import currentWeather
 from apis.wolfram import wolfram
-from apis.urbandic import urbandic
-import ConfigParser
+from apis.urbandic import urbanDict
+import ConfigParser, json
+
 
 
 class MessageLogger:
@@ -61,9 +62,31 @@ class LogBot(irc.IRCClient):
    
     # the nickname might have problems with uniquness when connecting to freenode.net 
     nickname = "AL"
-    __stored_messages = {} # used for user messages with the tell command
-    __points = {}
+    stored_messages = {}
+
+
+    def __init__(self):
+        self.stored_messages = self.getMessages()
+
     
+    def getMessages(self):
+        """ Get my persisted messages from the message.json file"""
+        with open('files/messages.json', 'r') as f:
+            try:
+                messages = json.loads(f.read())
+                f.close()
+                return messages
+            except:
+                f.close()
+                return {}
+
+
+    def saveMessages(self):
+        """ Presist my stored messages by writing to a file"""
+        with open('messages.json', 'w') as f:
+            f.write(json.dumps(self.stored_messages))
+            f.close()
+
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -110,16 +133,16 @@ class LogBot(irc.IRCClient):
             if user[-1] == ':':  # if the user has ':' with their name from autocomplete
                 user = user[:-1]
             # if the user is already in the dictionary
-            if user in self.__points:
-                    self.__points[user] += 1
+            if user in self.points:
+                    self.points[user] += 1
             # if they aren't being recorded yet, start them at 1 or -1
             else:
-                    self.__points[user] = 1
+                    self.points[user] = 1
 
-            if self.__points[user] == 1:
-                self.msg(channel, '{0} has {1} point'. format(user, self.__points[user]))
+            if self.points[user] == 1:
+                self.msg(channel, '{0} has {1} point'. format(user, self.points[user]))
             else:
-                self.msg(channel, '{0} has {1} points'. format(user, self.__points[user]))
+                self.msg(channel, '{0} has {1} points'. format(user, self.points[user]))
 
 
         #==========================================================================================
@@ -130,7 +153,7 @@ class LogBot(irc.IRCClient):
                 try:
                     menu = scrapeCafe()
                     # make the menu all nice for chat purposes
-                    menu_msg = 'Steam \'n Turren: {0}.\nField of Greens:{1}.\
+                    menu_msg = 'Steam \'n Turren: {0}.\nField of Greens: {1}.\
                         \nFlavor & Fire: {2}.\nThe Grillery: {3}.\
                         \nMain Event: {4}'.format(
                                             menu['soup'], 
@@ -145,6 +168,9 @@ class LogBot(irc.IRCClient):
                     self.msg(channel, 'Sorry, I do not understand')
                     pass
 
+            elif parts[1] == 'hi':
+                    self.msg(channel, 'Hello, I am AL')
+
             elif parts[1] == 'weather':
                 try:
                     # get the weather and tell the channel
@@ -158,63 +184,84 @@ class LogBot(irc.IRCClient):
                     pass
 
             elif parts[1] == 'tell':
+                """Tell a user a given message when they join"""
                 try:
                     # form the message
                     target_user = parts[2]
                     tell_msg = '{0}, {1} said: {2}'.format(target_user, user, ' '.join(parts[3:]))
-                    if target_user not in self.__stored_messages:
-                        self.__stored_messages[target_user] = []
-                    self.__stored_messages[target_user].append(tell_msg)
+                    if target_user not in self.stored_messages:
+                        self.stored_messages[target_user] = []
+                    self.stored_messages[target_user].append(tell_msg)
+                    self.saveMessages()
                     self.msg(channel, 'I will pass that along when {0} joins'.format(target_user))
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'Give me a message to tell someone!: `AL: tell <user> <message>`')
 
             elif parts[1] == 'help':
+                """Tell them the commands I have available"""
                 try:
                     help_msg = 'I currently support the following commands:\
-                    \ncafe\nweather\n\
-                    \ntell <user> <message>'
+                    \ncafe\nweather\
+                    \ntell <user> <message> (When they join the channel)\
+                    \ndefine <something>\
+                    \nor just ask me a question'
                     self.msg(channel, help_msg)
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'The help command broke')
 
+            elif parts[1] == 'define':
+                try:
+                    question = ' '.join(parts[2:])
+                    urban_response = urbanDict(question)
+                    if urban_response:
+                        answer = '{0}\nFor Example: {1}\n{2}'.format(
+                                            urban_response['definition'], 
+                                            urban_response['example'], 
+                                            urban_response['permalink']) 
+                        self.msg(channel, answer)
+                    else:
+                        answer = 'I don\'t know'
+                except Exception as e:
+                    print e
+                    print 'I died trying to get urban dictionary to define something'
         #==========================================================================================
         # ---------- IF NOT ONE OF THE SPECIAL COMMANDS ABOVE ASK WOLFRAM
         #==========================================================================================
             else:
                 try:
                     config = ConfigParser.RawConfigParser()
-                    config.read('wfconfig.cfg')
+                    config.read('config.cfg')
                     key = config.get('wolfram', 'key')
                     question = ' '.join(parts[1:])
                     w = wolfram(key)
                     answer = w.search(question)
-                    if not answer:                        
-                        urban_response = urbandic(question)
-                        if urban_response:
-                            answer = '{0} \nFor Example: {1}\n{2}'.format(
-                                                urban_response['definition'], 
-                                                urban_response['example'], 
-                                                urban_response['permalink']) 
-                        else:
-                            answer = 'i don\'t know'
-                    self.msg(channel, answer)
+                    if answer:                        
+                        count = 0
+                        # only show the first 2 answers so AL doesn't get kicked for flooding
+                        # anything more than 2 gets PM'd to the user who asked the question
+                        for k, v in answer.items():
+                            if count <= 2:
+                                self.msg(channel, v.encode('utf-8'))
+                            else:
+                                self.msg(user, v.encode('utf-8'))
+                            count += 1
                 except Exception as e:
                     print e
-                    print 'I died trying to ask wolfram a question'
+                    print 'I died trying to ask wolfram or urban dictionary a question'
 
 
     def userJoined(self, user, channel):
         """This will get called when I see a user join a channel"""
         #check to see if I need to tell anyone anything
         try:
-            if user in self.__stored_messages:
-                for message in self.__stored_messages[user]:
-                    self.msg(channel, message)
+            if user in self.stored_messages:
+                for message in self.stored_messages[user]:
+                    self.msg(channel, str(message))
                 #remove the messages
-                del self.__stored_messages[user]           
+                del self.stored_messages[user]
+                self.saveMessages()
         except Exception as e:
             print e
             self.msg(channel, 'I was trying to tell someone something, but I broke. :(')
@@ -255,14 +302,17 @@ class LogBotFactory(protocol.ClientFactory):
         self.channel = channel
         self.filename = filename
 
+
     def buildProtocol(self, addr):
         p = LogBot()
         p.factory = self
         return p
 
+
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""
         connector.connect()
+
 
     def clientConnectionFailed(self, connector, reason):
         print "connection failed:", reason

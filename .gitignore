@@ -3,4 +3,6 @@
 sftp-config.json
 log/*
 config.py
+config.cfg
 files/messages.json
+files/user.json

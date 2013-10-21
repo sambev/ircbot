@@ -63,10 +63,12 @@ class LogBot(irc.IRCClient):
     # the nickname might have problems with uniquness when connecting to freenode.net 
     nickname = "AL"
     stored_messages = {}
+    user_info = {}
 
 
     def __init__(self):
         self.stored_messages = self.getMessages()
+        self.user_info = self.getUserInfo()
 
     
     def getMessages(self):
@@ -83,8 +85,27 @@ class LogBot(irc.IRCClient):
 
     def saveMessages(self):
         """ Presist my stored messages by writing to a file"""
-        with open('messages.json', 'w') as f:
+        with open('files/messages.json', 'w') as f:
             f.write(json.dumps(self.stored_messages))
+            f.close()
+
+
+    def getUserInfo(self):
+        """ Get information about my users """
+        with open('files/user_info.json', 'r') as f:
+            try:
+                messages = json.loads(f.read())
+                f.close()
+                return messages
+            except:
+                f.close()
+                return {}
+
+
+    def saveUserInfo(self):
+        """ Save my user data """
+        with open('files/user_info.json', 'w') as f:
+            f.write(json.dumps(self.user_info))
             f.close()
 
 
@@ -205,6 +226,9 @@ class LogBot(irc.IRCClient):
                     \ncafe\nweather\
                     \ntell <user> <message> (When they join the channel)\
                     \ndefine <something>\
+                    \nshow users\
+                    \nremember <name> <email> <phone number> (email, phone optional)\
+                    \nupdate <user> <new email>\
                     \nor just ask me a question'
                     self.msg(channel, help_msg)
                 except Exception as e:
@@ -220,12 +244,64 @@ class LogBot(irc.IRCClient):
                                             urban_response['definition'], 
                                             urban_response['example'], 
                                             urban_response['permalink']) 
-                        self.msg(channel, answer)
+                        self.msg(channel, answer.encode('utf-8'))
                     else:
                         answer = 'I don\'t know'
                 except Exception as e:
                     print e
                     print 'I died trying to get urban dictionary to define something'
+
+            elif ' '.join(parts[1:3]) == 'show users':
+                try:
+                    self.msg(channel, ', '.join([user for user in self.user_info]).encode('utf-8'))
+                except Exception as e:
+                    print e
+                    self.msg(channel, 'Error %s' % e)
+
+
+            elif parts[1] == 'remember':
+                try:
+                    user = parts[2]
+                    if user not in self.user_info:
+                        self.user_info[user] = {}
+                        # Try to set an email or phone, if they were supplied
+                        try:
+                            self.user_info[user]['email'] = parts[3]
+                            try:
+                                self.user_info[user]['phone'] = parts[4]
+                            except IndexError:
+                                pass
+                        except IndexError:
+                            pass
+                        self.saveUserInfo()
+                        self.msg(channel, "I'll remember that info")
+                    else:
+                        self.msg(channel, 'I already know that user')
+                except Exception as e:
+                    print e
+                    print 'Error: %s' % e
+                    self.msg(channel, 'Error: %s' % e)
+
+            elif ' '.join(parts[1:3]) == 'update email':
+                try:
+                    user = parts[3]
+                    if user in self.user_info:
+                        try:
+                            self.user_info[user]['email'] = parts[4]
+                            self.saveUserInfo()
+                            self.msg(channel, 'Updated email for %s' % user)
+                        except IndexError:
+                            self.msg(channel, 'Please supply an email')
+                    else:
+                        self.msg(channel, "I don't know that user")
+                except Exception as e:
+                    print e
+                    print 'Error: %s' % e
+                    self.msg(channel, 'Error %s' % e)
+
+
+
+
         #==========================================================================================
         # ---------- IF NOT ONE OF THE SPECIAL COMMANDS ABOVE ASK WOLFRAM
         #==========================================================================================
@@ -248,7 +324,7 @@ class LogBot(irc.IRCClient):
                                 self.msg(user, v.encode('utf-8'))
                             count += 1
                 except Exception as e:
-                    print e
+                    print dir(e)
                     print 'I died trying to ask wolfram or urban dictionary a question'
 
 

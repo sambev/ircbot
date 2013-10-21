@@ -3,8 +3,15 @@ ircbot
 
 IRC bot in Twisted
 
-See requirements.txt for... the requirements.  The easiest way to install them is with pip.
-Built using python 2.7.3.
+See requirements.txt for... the requirements.  The easiest way to install them is with pip.  Built using python 2.7.3.
+
+Setup instructions;
+1. Install dependencies with `pip install -r requirements.txt`
+2. create a config.cfg file for your wolfram keys
+3. create a files directory with messages.json and user_info.json inside of it.
+
+
+If you don't have pip use easy install or apt-get to get it
 
 ### Ubuntu/Debian Installation:
 
@@ -12,27 +19,9 @@ You will probably need the libxml2-dev and libxslt-dev packages (for BeautifulSo
 
 `apt-get install libxml2-dev libxslt-dev`
 
-Then you can run this:
-
-`pip install -r requirements.txt`
-
-If you don't have pip use easy install or apt-get to get it
-
-`easy install pip`
-`apt-get install python-pip`
-
-
 ### Mac Installation:
 
 You will need Xcode with commandline tools installed and (probably?) the libxml packages mentioned above
-
-Then run the pip command:
-
-`pip install -r requirements.txt`
-
-If you don't have pip, use easy_install to install it
-
-`easy_install pip`
 
 
 ### Windows Installation:

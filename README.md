@@ -5,13 +5,14 @@ IRC bot in Twisted
 
 See requirements.txt for... the requirements.  The easiest way to install them is with pip.  Built using python 2.7.3.
 
-Setup instructions;
+Setup instructions:
+
 1. Install dependencies with `pip install -r requirements.txt`
 2. create a config.cfg file for your wolfram keys
 3. create a files directory with messages.json and user_info.json inside of it.
 
 
-If you don't have pip use easy install or apt-get to get it
+If you don't have pip, use easy install or apt-get to get it
 
 ### Ubuntu/Debian Installation:
 

@@ -5,4 +5,4 @@ log/*
 config.py
 config.cfg
 files/messages.json
-files/user.json
+files/user_info.json

@@ -32,6 +32,7 @@ from scrapers.cafescraper import scrapeCafe
 from apis.weatherman import currentWeather
 from apis.wolfram import wolfram
 from apis.urbandic import urbanDict
+from apis.lastfm import getCurrentSong
 import ConfigParser, json
 
 
@@ -229,6 +230,7 @@ class LogBot(irc.IRCClient):
                     \nshow users\
                     \nremember <name> <email> <phone number> (email, phone optional)\
                     \nupdate <user> <new email>\
+                    \nsong <lastfm user>\
                     \nor just ask me a question'
                     self.msg(channel, help_msg)
                 except Exception as e:
@@ -239,14 +241,16 @@ class LogBot(irc.IRCClient):
                 try:
                     question = ' '.join(parts[2:])
                     urban_response = urbanDict(question)
+                    print 'urban : %s' % urban_response
                     if urban_response:
                         answer = '{0}\nFor Example: {1}\n{2}'.format(
                                             urban_response['definition'], 
                                             urban_response['example'], 
                                             urban_response['permalink']) 
-                        self.msg(channel, answer.encode('utf-8'))
+                        self.msg(channel, answer)
                     else:
                         answer = 'I don\'t know'
+                        self.msg(channel, answer)
                 except Exception as e:
                     print e
                     print 'I died trying to get urban dictionary to define something'
@@ -296,10 +300,17 @@ class LogBot(irc.IRCClient):
                         self.msg(channel, "I don't know that user")
                 except Exception as e:
                     print e
-                    print 'Error: %s' % e
                     self.msg(channel, 'Error %s' % e)
 
-
+            elif parts[1] == 'song':
+                try:
+                    user = parts[2]
+                    song = getCurrentSong(user)
+                    if song:
+                        self.msg(channel, '{0} is listening to {1}'.format(user, song.encode('utf-8')))
+                except Exception as e:
+                    print e
+                    self.msg(channel, 'Error: {0}'.format(e))
 
 
         #==========================================================================================

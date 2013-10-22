@@ -33,6 +33,7 @@ from apis.weatherman import currentWeather
 from apis.wolfram import wolfram
 from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
+from apis.rottentomatoes import rottentomatoes
 import ConfigParser, json
 
 
@@ -231,12 +232,33 @@ class LogBot(irc.IRCClient):
                     \nremember <name> <email> <phone number> (email, phone optional)\
                     \nupdate <user> <new email>\
                     \nsong <lastfm user>\
+                    \nmovie <movie name>\
                     \nor just ask me a question'
                     self.msg(channel, help_msg)
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'The help command broke')
 
+            elif parts[1] == 'movie':
+                try:
+                    config = ConfigParser.RawConfigParser()
+                    config.read('config.cfg')
+                    key = config.get('rottentomatoes', 'key')
+                    movie = ' '.join(parts[2:])
+                    movie_response = rottentomatoes(movie, key)
+                    print 'movie : %s' % movie_response
+                    if movie_response:
+                        answer = 'Critics Score: {0}\nAudience Score: {1}\n{2}'.format(
+                            movie_response['critics_score'],
+                            movie_response['audience_score'],
+                            movie_response['link'])
+                        self.msg(channel, answer)
+                    else:
+                        answer = 'I can\'t find that movie'
+                        self.msg(channel, answer)
+                except Exception, e:
+                    print e
+                    print 'I died trying to get your movie information'
             elif parts[1] == 'define':
                 try:
                     question = ' '.join(parts[2:])

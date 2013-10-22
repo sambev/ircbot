@@ -1,6 +1,7 @@
 def rottentomatoes(query, apikey):
     """
-    Searches urbandictionary.com for a definition to the query given
+    Searches rottentomatoes.com movie ratings
+    @params movie name <string> api key <string>
     @return response dictionary 
     """
     import requests
@@ -26,4 +27,5 @@ def rottentomatoes(query, apikey):
 if __name__ == "__main__":
     import sys
     query = sys.argv[1]
-    print rottentomatoes(query, 'nbf4u2eczdtrc2dtcn4gkzj8')
+    apikey = sys.argv[2]
+    print rottentomatoes(query, apikey)

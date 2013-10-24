@@ -197,8 +197,18 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'weather':
                 try:
                     # get the weather and tell the channel
-                    weather = currentWeather()
-                    w_msg = '{0},  {1} degrees'.format(weather['status'], weather['temp'])
+                    if len(parts) == 3 and  parts[2].isdigit() and len(parts[2]) == 5:
+                        weather = currentWeather('', '', parts[2])
+                    elif len(parts) == 4:
+                        weather = currentWeather(parts[2], parts[3])
+                    else:
+                        weather = currentWeather()
+                    w_msg = 'The weather in {0} is {1}, {2} degrees, {3}% humdity.'.format(
+                        weather['place'],
+                        weather['status'],
+                        weather['temp'],
+                        weather['humidity']
+                    )
                     self.msg(channel, w_msg)
                     self.logger.log(w_msg)
                 except Exception as e:
@@ -225,7 +235,8 @@ class LogBot(irc.IRCClient):
                 """Tell them the commands I have available"""
                 try:
                     help_msg = 'I currently support the following commands:\
-                    \ncafe\nweather\
+                    \ncafe\
+                    \nweather [<city> <state> | <zip>]\
                     \ntell <user> <message> (When they join the channel)\
                     \ndefine <something>\
                     \nshow users\
@@ -246,7 +257,6 @@ class LogBot(irc.IRCClient):
                     key = config.get('rottentomatoes', 'key')
                     movie = ' '.join(parts[2:])
                     movie_response = rottentomatoes(movie, key)
-                    print 'movie : %s' % movie_response
                     if movie_response:
                         answer = 'Critics Score: {0}\nAudience Score: {1}\n{2}'.format(
                             movie_response['critics_score'],
@@ -259,11 +269,11 @@ class LogBot(irc.IRCClient):
                 except Exception, e:
                     print e
                     print 'I died trying to get your movie information'
+
             elif parts[1] == 'define':
                 try:
                     question = ' '.join(parts[2:])
                     urban_response = urbanDict(question)
-                    print 'urban : %s' % urban_response
                     if urban_response:
                         answer = '{0}\nFor Example: {1}\n{2}'.format(
                                             urban_response['definition'], 

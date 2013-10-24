@@ -7,9 +7,10 @@ See requirements.txt for... the requirements.  The easiest way to install them i
 
 Setup instructions:
 
-1. Install dependencies with `pip install -r requirements.txt`
-2. create a config.cfg file for your wolfram keys
+1. Install dependencies with `pip install -r requirements.txt`.
+2. create a config.cfg file with keys for wolfram and rottentomatoes.
 3. create a files directory with messages.json and user_info.json inside of it.
+4. create a log directory for the log files.
 
 
 If you don't have pip, use easy install or apt-get to get it

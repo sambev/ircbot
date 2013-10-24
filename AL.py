@@ -147,8 +147,18 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'weather':
                 try:
                     # get the weather and tell the channel
-                    weather = currentWeather()
-                    w_msg = '{0},  {1} degrees'.format(weather['status'], weather['temp'])
+                    if len(parts) == 3 and  parts[2].isdigit() and len(parts[2]) == 5:
+                        weather = currentWeather('', '', parts[2])
+                    elif len(parts) == 4:
+                        weather = currentWeather(parts[2], parts[3])
+                    else:
+                        weather = currentWeather()
+                    w_msg = 'The weather in {0} is {1}, {2} degrees, {3}% humdity.'.format(
+                        weather['place'],
+                        weather['status'],
+                        weather['temp'],
+                        weather['humidity']
+                    )
                     self.msg(channel, w_msg)
                     self.logger.log(w_msg)
                 except Exception as e:
@@ -172,7 +182,7 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'help':
                 try:
                     help_msg = 'I currently support the following commands:\
-                    \ncafe\nweather\n\
+                    \ncafe\nweather [<city> <state> | <zip>]\n\
                     \ntell <user> <message>'
                     self.msg(channel, help_msg)
                 except Exception as e:

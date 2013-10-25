@@ -179,9 +179,11 @@ class LogBot(irc.IRCClient):
                 try:
                     menu = scrapeCafe()
                     # make the menu all nice for chat purposes
-                    for k, v in menu.items():
+                    for k, v in menu['stations'].items():
                         if v:
-                            self.msg(channel, '%s : %s' % (k.encode('utf-8'), v.encode('utf-')))
+                            station = '{:.<{station_width}}'.format(k.encode('utf-8'), station_width=menu['station_max_width'] + 4)
+                            item = '{:.>{item_width}}'.format(v['item'].encode('utf-8'), item_width=menu['item_max_width'])
+                            self.msg(channel, '%s%s   %s' % (station, item, v['price'].encode('utf-8')))
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'Sorry, I do not understand')

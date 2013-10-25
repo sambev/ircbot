@@ -10,11 +10,11 @@ def scrapeCafe():
 	the_html = BeautifulSoup(page.text)
 
 	mapping = {
-	    'soup': 'steam',
-	    'flavor': 'flavor',
-	    'main': 'mainevent',
-	    'greens': 'fieldofgreens',
-	    'grill': 'dailygrill',
+	    'Steam \'n Turren': 'steam',
+	    'Flavor & Fire': 'flavor',
+	    'Main Event': 'mainevent',
+	    'Field Of Greens': 'fieldofgreens',
+	    'The Grillery': 'dailygrill',
 	}
 
 	stations = {}
@@ -26,7 +26,7 @@ def scrapeCafe():
 	    try:
 	        stations[k] = main_div.find_all('li', v)[0].contents[2].get_text()
 	    except:
-	    	stations[k] = 'Not listed'
+	    	stations[k] = None
 	        pass
 
 	return stations

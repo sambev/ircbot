@@ -176,16 +176,9 @@ class LogBot(irc.IRCClient):
                 try:
                     menu = scrapeCafe()
                     # make the menu all nice for chat purposes
-                    menu_msg = 'Steam \'n Turren: {0}.\nField of Greens: {1}.\
-                        \nFlavor & Fire: {2}.\nThe Grillery: {3}.\
-                        \nMain Event: {4}'.format(
-                                            menu['soup'], 
-                                            menu['greens'], 
-                                            menu['flavor'], 
-                                            menu['grill'], 
-                                            menu['main'])
-                    self.msg(channel, menu_msg)
-                    self.logger.log(menu_msg)
+                    for k, v in menu.items():
+                        if v:
+                            self.msg(channel, '%s : %s' % (k.encode('utf-8'), v.encode('utf-')))
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'Sorry, I do not understand')
@@ -245,7 +238,7 @@ class LogBot(irc.IRCClient):
                     \nsong <lastfm user>\
                     \nmovie <movie name>\
                     \nor just ask me a question'
-                    self.msg(channel, help_msg)
+                    self.msg(user, help_msg)
                 except Exception as e:
                     print e.message
                     self.msg(channel, 'The help command broke')
@@ -358,10 +351,10 @@ class LogBot(irc.IRCClient):
                     answer = w.search(question)
                     if answer:                        
                         count = 0
-                        # only show the first 2 answers so AL doesn't get kicked for flooding
-                        # anything more than 2 gets PM'd to the user who asked the question
+                        # only show the first answer so AL doesn't get kicked for flooding
+                        # anything more than 1 gets PM'd to the user who asked the question
                         for k, v in answer.items():
-                            if count <= 2:
+                            if count <= 1:
                                 self.msg(channel, v.encode('utf-8'))
                             else:
                                 self.msg(user, v.encode('utf-8'))

@@ -27,14 +27,17 @@ from twisted.internet import reactor, protocol
 from twisted.python import log
 
 # system imports
-import time, sys
+import time
+import sys
 from scrapers.cafescraper import scrapeCafe
 from apis.weatherman import currentWeather
 from apis.wolfram import wolfram
 from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
 from apis.rottentomatoes import rottentomatoes
-import ConfigParser, json
+import ConfigParser
+import json
+import traceback
 
 
 
@@ -102,6 +105,13 @@ class LogBot(irc.IRCClient):
             except:
                 f.close()
                 return {}
+
+
+    def logError(self, channel):
+        """ Log an error to STDOUT, the logs, and chat """
+        print traceback.format_exc() 
+        self.logger.log("Traceback Error:\n%s" % traceback.format_exc())
+        self.msg(channel, 'There was an Error in your request, check the logs')
 
 
     def saveUserInfo(self):
@@ -175,7 +185,27 @@ class LogBot(irc.IRCClient):
         # ---------- MESSAGES DIRECTED AT ME
         #==========================================================================================
         if parts[0] == self.nickname + ':':
-            if parts[1] == 'cafe':
+
+            if parts[1] == 'help':
+                """Tell them the commands I have available"""
+                try:
+                    help_msg = 'I currently support the following commands:\
+                    \ncafe\
+                    \nweather [<city> <state> | <zip>]\
+                    \ntell <user> <message> (When they join the channel)\
+                    \ndefine <something>\
+                    \nshow users\
+                    \nremember <name> <email> <phone number> (email, phone optional)\
+                    \nupdate <user> <new email>\
+                    \nsong <lastfm user>\
+                    \nmovie <movie name>\
+                    \nor just ask me a question'
+                    self.msg(user, help_msg)
+                except Exception as e:
+                    self.logError(channel)
+
+
+            elif parts[1] == 'cafe':
                 try:
                     menu = scrapeCafe()
                     # make the menu all nice for chat purposes
@@ -183,12 +213,12 @@ class LogBot(irc.IRCClient):
                         if v:
                             self.msg(channel, '%s : %s' % (k.encode('utf-8'), v.encode('utf-')))
                 except Exception as e:
-                    print e.message
-                    self.msg(channel, 'Sorry, I do not understand')
-                    pass
+                    self.logError(channel)
+
 
             elif parts[1] == 'hi':
                     self.msg(channel, 'Hello, I am AL')
+
 
             elif parts[1] == 'weather':
                 try:
@@ -208,9 +238,8 @@ class LogBot(irc.IRCClient):
                     self.msg(channel, w_msg)
                     self.logger.log(w_msg)
                 except Exception as e:
-                    print e.message
-                    self.msg(channel, 'Sorry I do not understand')
-                    pass
+                    self.logError(channel)
+
 
             elif parts[1] == 'tell':
                 """Tell a user a given message when they join"""
@@ -224,27 +253,8 @@ class LogBot(irc.IRCClient):
                     self.saveMessages()
                     self.msg(channel, 'I will pass that along when {0} joins'.format(target_user))
                 except Exception as e:
-                    print e.message
-                    self.msg(channel, 'Give me a message to tell someone!: `AL: tell <user> <message>`')
+                    self.logError(channel)
 
-            elif parts[1] == 'help':
-                """Tell them the commands I have available"""
-                try:
-                    help_msg = 'I currently support the following commands:\
-                    \ncafe\
-                    \nweather [<city> <state> | <zip>]\
-                    \ntell <user> <message> (When they join the channel)\
-                    \ndefine <something>\
-                    \nshow users\
-                    \nremember <name> <email> <phone number> (email, phone optional)\
-                    \nupdate <user> <new email>\
-                    \nsong <lastfm user>\
-                    \nmovie <movie name>\
-                    \nor just ask me a question'
-                    self.msg(user, help_msg)
-                except Exception as e:
-                    print e.message
-                    self.msg(channel, 'The help command broke')
 
             elif parts[1] == 'movie':
                 try:
@@ -263,8 +273,8 @@ class LogBot(irc.IRCClient):
                         answer = 'I can\'t find that movie'
                         self.msg(channel, answer)
                 except Exception, e:
-                    print e
-                    print 'I died trying to get your movie information'
+                    self.logError(channel)
+
 
             elif parts[1] == 'define':
                 try:
@@ -280,15 +290,13 @@ class LogBot(irc.IRCClient):
                         answer = 'I don\'t know'
                         self.msg(channel, answer)
                 except Exception as e:
-                    print e
-                    print 'I died trying to get urban dictionary to define something'
+                    self.logError(channel)
 
             elif ' '.join(parts[1:3]) == 'show users':
                 try:
                     self.msg(channel, ', '.join([user for user in self.user_info]).encode('utf-8'))
                 except Exception as e:
-                    print e
-                    self.msg(channel, 'Error %s' % e)
+                    self.logError(channel)
 
 
             elif parts[1] == 'remember':
@@ -314,9 +322,8 @@ class LogBot(irc.IRCClient):
                     else:
                         self.msg(channel, 'I already know that user')
                 except Exception as e:
-                    print e
-                    print 'Error: %s' % e
-                    self.msg(channel, 'Error: %s' % e)
+                    self.logError(channel)
+
 
             elif ' '.join(parts[1:3]) == 'update email':
                 try:
@@ -334,6 +341,7 @@ class LogBot(irc.IRCClient):
                     print e
                     self.msg(channel, 'Error %s' % e)
 
+
             elif parts[1] == 'song':
                 try:
                     user = parts[2]
@@ -341,8 +349,7 @@ class LogBot(irc.IRCClient):
                     if song:
                         self.msg(channel, '{0} is listening to {1}'.format(user, song.encode('utf-8')))
                 except Exception as e:
-                    print e
-                    self.msg(channel, 'Error: {0}'.format(e))
+                    self.logError(channel)
 
 
         #==========================================================================================
@@ -367,8 +374,7 @@ class LogBot(irc.IRCClient):
                                 self.msg(user, v.encode('utf-8'))
                             count += 1
                 except Exception as e:
-                    print dir(e)
-                    print 'I died trying to ask wolfram or urban dictionary a question'
+                    self.logError(channel)
 
 
     def userJoined(self, user, channel):
@@ -382,8 +388,7 @@ class LogBot(irc.IRCClient):
                 del self.stored_messages[user]
                 self.saveMessages()
         except Exception as e:
-            print e
-            self.msg(channel, 'I was trying to tell someone something, but I broke. :(')
+            self.logError(channel)
 
 
     def action(self, user, channel, msg):

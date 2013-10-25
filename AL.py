@@ -152,20 +152,23 @@ class LogBot(irc.IRCClient):
 
         # if someone is trying to give points
         if parts[0][-2:] == '++':
-            user = parts[0][:-2]
-            if user[-1] == ':':  # if the user has ':' with their name from autocomplete
-                user = user[:-1]
-            # if the user is already in the dictionary
-            if user in self.points:
-                    self.points[user] += 1
-            # if they aren't being recorded yet, start them at 1 or -1
-            else:
-                    self.points[user] = 1
+            awardee = parts[0][:-2]
 
-            if self.points[user] == 1:
-                self.msg(channel, '{0} has {1} point'. format(user, self.points[user]))
+            # create a new user if AL doesn't know who they are
+            if awardee not in self.user_info:
+                self.user_info[awardee] = {
+                    'email': '',
+                    'phone': '',
+                    'points': 0
+                }
+
+            self.user_info[awardee]['points'] += 1
+            total_points = self.user_info[awardee]['points']
+            self.saveUserInfo()
+            if total_points == 1:
+                self.msg(channel, '{0} has {1} point'. format(awardee, total_points))
             else:
-                self.msg(channel, '{0} has {1} points'. format(user, self.points[user]))
+                self.msg(channel, '{0} has {1} points'. format(awardee, total_points))
 
 
         #==========================================================================================
@@ -292,7 +295,11 @@ class LogBot(irc.IRCClient):
                 try:
                     user = parts[2]
                     if user not in self.user_info:
-                        self.user_info[user] = {}
+                        self.user_info[user] = {
+                            'email': '',
+                            'phone': '',
+                            'points': 0
+                        }
                         # Try to set an email or phone, if they were supplied
                         try:
                             self.user_info[user]['email'] = parts[3]

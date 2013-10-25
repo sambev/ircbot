@@ -195,8 +195,10 @@ class LogBot(irc.IRCClient):
                     # get the weather and tell the channel
                     if len(parts) == 3 and  parts[2].isdigit() and len(parts[2]) == 5:
                         weather = currentWeather('', '', parts[2])
-                    elif len(parts) == 4:
-                        weather = currentWeather(parts[2], parts[3])
+                    elif len(parts) >= 4:
+                        state = parts.pop()
+                        city = ' '.join(parts[2:])
+                        weather = currentWeather(city, state)
                     else:
                         weather = currentWeather()
                     w_msg = 'The weather in {0} is {1}, {2} degrees, {3}% humdity.'.format(

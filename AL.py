@@ -36,6 +36,7 @@ from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
 from apis.rottentomatoes import rottentomatoes
 from apis.reddit import reddit
+from apis.quote import quote
 import ConfigParser
 import json
 import traceback
@@ -192,6 +193,7 @@ class LogBot(irc.IRCClient):
                 try:
                     help_msg = 'I currently support the following commands:\
                     \ncafe\
+                    \nquote\
                     \nweather [<city> <state> | <zip>]\
                     \ntell <user> <message> (When they join the channel)\
                     \ndefine <something>\
@@ -223,6 +225,13 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'hi':
                     self.msg(channel, 'Hello, I am AL')
 
+            elif parts[1] == 'quote':
+                try:
+                    randomQuote = quote()
+                    self.msg(channel, randomQuote.encode('utf-8'))
+                except Exception, e:
+                    self.logError(channel)
+                    
 
             elif parts[1] == 'weather':
                 try:
@@ -284,14 +293,14 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'reddit':
                 try:
                     subreddit = parts[2]
-                    if len(parts) > 3:
+                    
+                    # limit number of stories to 5. default to 1
+                    try:
                         count = int(parts[3])
-                    else:
-                        count =1
-
-                    #limit to 5 to avoid spam (maybe overflow to whisper)
-                    if len(parts) > 5:
-                        count = 5
+                        if count > 5:
+                            count = 5
+                    except IndexError:
+                        count = 1
 
                     reddit_response = reddit(subreddit, count)
                     if reddit_response:

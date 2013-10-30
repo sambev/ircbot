@@ -284,24 +284,25 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'reddit':
                 try:
                     subreddit = parts[2]
-                    if len(parts) > 3:
-                        count = int(parts[3])
-                    else:
-                        count =1
+                    try:
+                        amount = int(parts[3])
+                    except IndexError:
+                        amount = 1
 
-                    #limit to 5 to avoid spam (maybe overflow to whisper)
-                    if len(parts) > 5:
-                        count = 5
-
-                    reddit_response = reddit(subreddit, count)
+                    reddit_response = reddit(subreddit, amount)
                     if reddit_response:
                         answer = '%s:' % (subreddit)
-                        for i in range(count):
+                        count = 0
+                        for i in range(amount):
                             answer = '{0}: {1} : {2}'.format(
                                 i+1,
                                 reddit_response[i]['title'],
                                 reddit_response[i]['url'])
-                            self.msg(channel, answer)
+                            if count > 2:
+                                self.msg(user, answer)
+                            else:
+                                self.msg(channel, answer)
+                            count += 1
                     else:
                         answer = 'I can\'t find that on reddit'
                         self.msg(channel, answer)

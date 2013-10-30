@@ -7,7 +7,7 @@ def reddit(query, count):
     import json
 
     # send the request and get the data
-    r = requests.get('http://www.reddit.com/r/%s.json' % (query))
+    r = requests.get('http://www.reddit.com/r/%s.json?limit=%s' % (query, count))
 
     data = json.loads(r.text)
     responses = {}

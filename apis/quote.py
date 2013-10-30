@@ -8,12 +8,12 @@ def quote():
     from random import randint
 
     # send the request and get the data
-    r = requests.get('http://www.reddit.com/r/quotes.json')
+    r = requests.get('http://www.reddit.com/r/quotes.json?limit=100')
 
     data = json.loads(r.text)
     response = ""
     if data['data']:
-    	i = randint(0,len(data['data']['children']))
+    	i = randint(0,len(data['data']['children'])-1)
         response = data['data']['children'][i]['data']['title']
     else:
         response = None

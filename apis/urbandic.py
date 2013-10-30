@@ -25,4 +25,4 @@ def urbanDict(query):
 if __name__ == "__main__":
     import sys
     query = sys.argv[1]
-    urbandic(query)
+    print urbanDict(query)

@@ -35,6 +35,7 @@ from apis.wolfram import wolfram
 from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
 from apis.rottentomatoes import rottentomatoes
+from apis.reddit import reddit
 import ConfigParser
 import json
 import traceback
@@ -199,6 +200,7 @@ class LogBot(irc.IRCClient):
                     \nupdate <user> <new email>\
                     \nsong <lastfm user>\
                     \nmovie <movie name>\
+                    \nreddit <subreddit> <# of links optional>\
                     \nor just ask me a question'
                     self.msg(user, help_msg)
                 except Exception as e:
@@ -278,6 +280,33 @@ class LogBot(irc.IRCClient):
                         self.msg(channel, answer)
                 except Exception, e:
                     self.logError(channel)
+
+            elif parts[1] == 'reddit':
+                try:
+                    subreddit = parts[2]
+                    if len(parts) > 3:
+                        count = int(parts[3])
+                    else:
+                        count =1
+
+                    #limit to 5 to avoid spam (maybe overflow to whisper)
+                    if len(parts) > 5:
+                        count = 5
+
+                    reddit_response = reddit(subreddit, count)
+                    if reddit_response:
+                        answer = '%s:' % (subreddit)
+                        for i in range(count):
+                            answer = '{0}: {1} : {2}'.format(
+                                i+1,
+                                reddit_response[i]['title'],
+                                reddit_response[i]['url'])
+                            self.msg(channel, answer)
+                    else:
+                        answer = 'I can\'t find that on reddit'
+                        self.msg(channel, answer)
+                except Exception, e:
+                    self.logError(channel)        
 
 
             elif parts[1] == 'define':

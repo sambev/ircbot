@@ -39,4 +39,4 @@ if __name__ == "__main__":
     appid = sys.argv[1]
     query = sys.argv[2]
     w = wolfram(appid)
-    w.search(query)
+    print w.search(query)

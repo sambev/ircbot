@@ -36,6 +36,7 @@ from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
 from apis.rottentomatoes import rottentomatoes
 from apis.reddit import reddit
+from random import randint
 import ConfigParser
 import json
 import traceback
@@ -372,8 +373,7 @@ class LogBot(irc.IRCClient):
                     else:
                         self.msg(channel, "I don't know that user")
                 except Exception as e:
-                    print e
-                    self.msg(channel, 'Error %s' % e)
+                    self.logError(channel)
 
 
             elif parts[1] == 'song':
@@ -383,6 +383,20 @@ class LogBot(irc.IRCClient):
                     if song:
                         self.msg(channel, '{0} is listening to {1}'.format(user, song.encode('utf-8')))
                 except Exception as e:
+                    self.logError(channel)
+
+            elif parts[1] in ['Will', 'will']:
+                try:
+                    possible_ansers = [
+                        'Yes.',
+                        'No.',
+                        'Probably.',
+                        'There is a 50/50 chance.',
+                        'Maybe. Impossible to know for sure',
+                        'Probably not.'
+                    ]
+                    self.msg(channel, possible_ansers[randint(0, 5)].encode('utf-8'))
+                except:
                     self.logError(channel)
 
 
@@ -402,11 +416,12 @@ class LogBot(irc.IRCClient):
                         # only show the first answer so AL doesn't get kicked for flooding
                         # anything more than 1 gets PM'd to the user who asked the question
                         for k, v in answer.items():
-                            if count <= 1:
-                                self.msg(channel, v.encode('utf-8'))
-                            else:
-                                self.msg(user, v.encode('utf-8'))
-                            count += 1
+                            if k != 'Input interpretation':
+                                if count <= 1:
+                                    self.msg(channel, v.encode('utf-8'))
+                                else:
+                                    self.msg(user, v.encode('utf-8'))
+                                count += 1
                 except Exception as e:
                     self.logError(channel)
 

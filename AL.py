@@ -36,7 +36,11 @@ from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
 from apis.rottentomatoes import rottentomatoes
 from apis.reddit import reddit
+<<<<<<< HEAD
 from random import randint
+=======
+from apis.quote import quote
+>>>>>>> dbdd5dd57b0aad79c3682dd60bc31d2b8c231ac2
 import ConfigParser
 import json
 import traceback
@@ -193,6 +197,7 @@ class LogBot(irc.IRCClient):
                 try:
                     help_msg = 'I currently support the following commands:\
                     \ncafe\
+                    \nquote\
                     \nweather [<city> <state> | <zip>]\
                     \ntell <user> <message> (When they join the channel)\
                     \ndefine <something>\
@@ -224,6 +229,13 @@ class LogBot(irc.IRCClient):
             elif parts[1] == 'hi':
                     self.msg(channel, 'Hello, I am AL')
 
+            elif parts[1] == 'quote':
+                try:
+                    randomQuote = quote()
+                    self.msg(channel, randomQuote.encode('utf-8'))
+                except Exception, e:
+                    self.logError(channel)
+                    
 
             elif parts[1] == 'weather':
                 try:

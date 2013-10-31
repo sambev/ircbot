@@ -35,12 +35,8 @@ from apis.wolfram import wolfram
 from apis.urbandic import urbanDict
 from apis.lastfm import getCurrentSong
 from apis.rottentomatoes import rottentomatoes
-from apis.reddit import reddit
-<<<<<<< HEAD
+from apis.reddit import getSubReddit, getQuote
 from random import randint
-=======
-from apis.quote import quote
->>>>>>> dbdd5dd57b0aad79c3682dd60bc31d2b8c231ac2
 import ConfigParser
 import json
 import traceback
@@ -231,7 +227,7 @@ class LogBot(irc.IRCClient):
 
             elif parts[1] == 'quote':
                 try:
-                    randomQuote = quote()
+                    randomQuote = getQuote()
                     self.msg(channel, randomQuote.encode('utf-8'))
                 except Exception, e:
                     self.logError(channel)
@@ -302,19 +298,18 @@ class LogBot(irc.IRCClient):
                     except IndexError:
                         amount = 1
 
-                    reddit_response = reddit(subreddit, amount)
+                    reddit_response = getSubReddit(subreddit, amount)
                     if reddit_response:
-                        answer = '%s:' % (subreddit)
                         count = 0
-                        for i in range(amount):
+                        for key, value in reddit_response.items():
                             answer = '{0}: {1} : {2}'.format(
-                                i+1,
-                                reddit_response[i]['title'],
-                                reddit_response[i]['url'])
+                                key + 1,
+                                value['title'],
+                                value['url'])
                             if count > 2:
-                                self.msg(user, answer)
+                                self.msg(user, answer.encode('utf-8'))
                             else:
-                                self.msg(channel, answer)
+                                self.msg(channel, answer.encode('utf-8'))
                             count += 1
                     else:
                         answer = 'I can\'t find that on reddit'
@@ -422,18 +417,28 @@ class LogBot(irc.IRCClient):
                     key = config.get('wolfram', 'key')
                     question = ' '.join(parts[1:])
                     w = wolfram(key)
-                    answer = w.search(question)
-                    if answer:                        
-                        count = 0
-                        # only show the first answer so AL doesn't get kicked for flooding
-                        # anything more than 1 gets PM'd to the user who asked the question
-                        for k, v in answer.items():
-                            if k != 'Input interpretation':
-                                if count <= 1:
+                    result = w.search(question)
+                    if result:
+                        answer = result.get('Value', 
+                                result.get('Result',
+                                result.get('Definition',
+                                result.get('Statement',
+                                result.get('Current result',
+                                None)))))
+                        if answer:
+                            self.msg(channel, answer.encode('utf-8'))
+                        else:
+                            count = 0
+                            self.msg(channel, 'Not entirely sure, maybe this helps?:')
+                            for k, v in result.items():
+                                if count < 2:
                                     self.msg(channel, v.encode('utf-8'))
                                 else:
                                     self.msg(user, v.encode('utf-8'))
                                 count += 1
+                    else:
+                        self.msg(channel, 'I don\'t know')
+
                 except Exception as e:
                     self.logError(channel)
 

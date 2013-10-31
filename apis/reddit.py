@@ -1,17 +1,22 @@
-def reddit(query, count):
+import requests
+import json
+
+def getSubReddit(query, count):
     """
     Gets the top <count> number of stories on reddit for a given subreddit 
     @return response dictionary list 
     """
-    import requests
-    import json
 
     # send the request and get the data
     r = requests.get('http://www.reddit.com/r/%s.json?limit=%s' % (query, count))
 
-    data = json.loads(r.text)
+    try:
+        data = json.loads(r.text)
+    except ValueError:
+        return None
     responses = {}
-    if data['data']:
+
+    if 'data' in data:
         for i in xrange(0,count):
             responses[i] = {
                 'title':data['data']['children'][i]['data']['title'],
@@ -22,7 +27,32 @@ def reddit(query, count):
         responses = None
 
     return responses
+
+       
+def getQuote():    
+    """
+    Gets a random quote from the quotes subreddit
+    @return response dictionary 
+    """
+    from random import randint
+
+    # send the request and get the data
+    r = requests.get('http://www.reddit.com/r/quotes.json?limit=100')
+
+    try:
+        data = json.loads(r.text)
+    except ValueError:
+        return None
+
+    if 'data' in data:
+        i = randint(0,len(data['data']['children'])-1)
+        response = data['data']['children'][i]['data']['title']
+    else:
+        response = None
+
+    return response
         
+
 
 if __name__ == "__main__":
     import sys

@@ -201,7 +201,7 @@ class LogBot(irc.IRCClient):
                     \nupdate <user> <new email>\
                     \nsong <lastfm user>\
                     \nmovie <movie name>\
-                    \nreddit <subreddit> <# of links optional>\
+                    \nreddit <subreddit> <# of article optional>\
                     \nor just ask me a question'
                     self.msg(user, help_msg)
                 except Exception as e:
@@ -293,23 +293,17 @@ class LogBot(irc.IRCClient):
                 try:
                     subreddit = parts[2]
                     try:
-                        amount = int(parts[3])
+                        count = int(parts[3])
                     except IndexError:
-                        amount = 1
+                        count = 1
 
-                    reddit_response = getSubReddit(subreddit, amount)
+                    reddit_response = getSubReddit(subreddit, count)
                     if reddit_response:
-                        count = 0
-                        for key, value in reddit_response.items():
-                            answer = '{0}: {1} : {2}'.format(
-                                key + 1,
-                                value['title'],
-                                value['url'])
-                            if count > 2:
-                                self.msg(user, answer.encode('utf-8'))
-                            else:
-                                self.msg(channel, answer.encode('utf-8'))
-                            count += 1
+                        answer = '{0}: {1} : {2}'.format(
+                            count,
+                            reddit_response['title'],
+                            reddit_response['url'])
+                        self.msg(channel, answer.encode('utf-8'))
                     else:
                         answer = 'I can\'t find that on reddit'
                         self.msg(channel, answer)

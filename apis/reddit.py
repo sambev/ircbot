@@ -3,8 +3,8 @@ import json
 
 def getSubReddit(query, count):
     """
-    Gets the top <count> number of stories on reddit for a given subreddit 
-    @return response dictionary list 
+    Gets the <count> story on reddit for a given subreddit <query>
+    @return response dictionary item 
     """
 
     # send the request and get the data
@@ -14,19 +14,18 @@ def getSubReddit(query, count):
         data = json.loads(r.text)
     except ValueError:
         return None
-    responses = {}
 
+    count = count - 1
     if 'data' in data:
-        for i in xrange(0,count):
-            responses[i] = {
-                'title':data['data']['children'][i]['data']['title'],
-                'permalink':data['data']['children'][i]['data']['permalink'],
-                'url':data['data']['children'][i]['data']['url']
-            }
+        response = {
+            'title':data['data']['children'][count]['data']['title'],
+            'permalink':data['data']['children'][count]['data']['permalink'],
+            'url':data['data']['children'][count]['data']['url']
+        }
     else:
-        responses = None
+        response = None
 
-    return responses
+    return response
 
        
 def getQuote():    
@@ -58,4 +57,4 @@ if __name__ == "__main__":
     import sys
     query = sys.argv[1]    
     count = int(sys.argv[2])
-    print reddit(query, count)
+    print getSubReddit(query, count)

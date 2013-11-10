@@ -3,8 +3,8 @@ import json
 
 def getSubReddit(query, count):
     """
-    Gets the top <count> number of stories on reddit for a given subreddit 
-    @return response dictionary list 
+    Gets the <count> story on reddit for a given subreddit <query>
+    @return response dictionary item 
     """
 
     # send the request and get the data

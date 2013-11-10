@@ -201,7 +201,7 @@ class LogBot(irc.IRCClient):
                     \nupdate <user> <new email>\
                     \nsong <lastfm user>\
                     \nmovie <movie name>\
-                    \nreddit <subreddit> <# of links optional>\
+                    \nreddit <subreddit> <# of article optional>\
                     \nor just ask me a question'
                     self.msg(user, help_msg)
                 except Exception as e:

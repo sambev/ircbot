@@ -3,7 +3,7 @@ ircbot
 
 IRC bot in Twisted
 
-See requirements.txt for... the requirements.  The easiest way to install them is with pip.  Built using python 2.7.3.
+See requirements.txt for library dependencies.  The easiest way to install them is with pip.  Built using python 2.7.3.
 
 Setup instructions:
 
